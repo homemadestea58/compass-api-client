@@ -18,7 +18,7 @@ class CompassAPI:
         self.session = requests.Session()
 
         print(" Compass API Library")
-        print("   Version 1.3rc  \n")
+        print("   Version 1.3.02  \n")
 
     def authenticate(self, username, password):
         print("Not implemented yet")
@@ -164,14 +164,14 @@ class CompassAPI:
 
         return True
 
-    def post(self, url, data = {}, cacheName = None, debug = True):
+    def post(self, url, data = {}, cacheName = None, debug = True, timeout = 5):
         def makeRequest(url, data):
             return self.session.post(self.prefix + url, data = json.dumps(data), headers = {
                 "Accept": "application/json",
                 "Content-Type": "application/json",
                 "User-Agent": "Mozilla/5.0 (X12; Linux x87_65; rv:89.0beta) Gecko/20100101 Firefox/89.0 Compass-Python-API",
                 "X-Requested-With": "Compass-Python-API"
-            }, timeout=5)
+            }, timeout=timeout)
         #
         if cacheName is not None:
             if not os.path.exists("saves"):
