@@ -1,0 +1,7 @@
+{
+	"schoolPrefix": "https://compass-vic.compass.education",
+	"username": "me",
+	"password": "me",
+	"useOkta": true,
+	"oktaPrefix": "https://example.okta.com"
+}
