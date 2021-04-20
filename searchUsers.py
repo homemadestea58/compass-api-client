@@ -8,15 +8,11 @@ from Levenshtein import distance
 import termtables as tt
 
 Compass = CompassAPI(
-    prefix = "https://compass-vic.compass.education",
-    oktaPrefix = "https://example.okta.com",
     debug = True
 )
 
-authenticationStatus = Compass.authenticateWithOkta(
-    username = "me",
-    password = "me"
-)
+Compass.loadConfigFromFile()
+authenticationStatus = Compass.authenticate()
 
 if not authenticationStatus:
     print("Authentication error!")

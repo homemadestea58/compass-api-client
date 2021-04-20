@@ -1,4 +1,4 @@
-import requests, json, sys, re, html, urllib, time, os, subprocess, pickle, random
+import requests, json, sys, re, html, urllib, time, os, subprocess, pickle, random, base64
 
 class CompassAPI:
     # Don't use leading slash
@@ -10,21 +10,43 @@ class CompassAPI:
     user = {}
     # Note - script isn't compatible with 2fa at the moment
 
-    def __init__(self, prefix, oktaPrefix, debug = True):
+    def __init__(self, debug = True):
         # Don't use leading slash for prefix
-        self.prefix = prefix
-        self.oktaPrefix = oktaPrefix
+        # self.prefix = prefix
+        # self.oktaPrefix = oktaPrefix
         self.debug = debug
         self.session = requests.Session()
 
         print(" Compass API Library")
         print("   Version 1.3.02  \n")
 
-    def authenticate(self, username, password):
-        print("Not implemented yet")
-        return False
+    def authenticate(self):
+        if self.oktaPrefix != "disabled":
+            return self.authenticateWithOkta()
+        else:
+            # TODO local auth
+            return False
 
-    def authenticateWithOkta(self, username, password):
+    def loadConfigFromFile(self, filename = "config.json"):
+        try:
+            with open(filename, "rb") as f:
+                configData = json.loads(f.read())
+                self.prefix = configData["schoolPrefix"]
+                self.username = configData["username"]
+                if "passwordBase64" in configData:
+                    self.password = base64.b64decode(configData["passwordBase64"]).decode("utf-8", "ignore")
+                else:
+                    self.password = configData["password"]
+                if configData["useOkta"]:
+                    self.oktaPrefix = configData["oktaPrefix"]
+                else:
+                    self.oktaPrefix = "disabled"
+        except Exception as e:
+            print("Error loading configuration:")
+            print(e)
+            exit()
+
+    def authenticateWithOkta(self):
         startTime = time.time()
 
         if not os.path.exists("saves"):
@@ -50,7 +72,6 @@ class CompassAPI:
                     return True
                 else:
                     printText("Saved session is invalid or missing, re-authenticating with Compass:")
-
         except Exception:
             printText("Saved session file does not exist, or is corrupt. Re-authenticating with Compass:")
 
@@ -72,8 +93,8 @@ class CompassAPI:
                 return None
 
         authnData = {
-            'username': username,
-            'password': password
+            'username': self.username,
+            'password': self.password
         }
 
         authnData = json.dumps(authnData)
@@ -96,8 +117,6 @@ class CompassAPI:
         printText("Getting SAML data from Compass...")
         compassSamlRequest = self.session.post(self.prefix + "/login.aspx?mobileSamlLogin=true")
         compassSamlResponse = compassSamlRequest.text
-
-        print(compassSamlResponse)
 
         printText("Parsing SAML data from Compass...")
         oktaFormOneData = {}
